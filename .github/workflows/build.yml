@@ -6,6 +6,9 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+  # Una Release pubblicata dal sito di GitHub compila e allega gli zip.
+  release:
+    types: [published]
 
 permissions:
   contents: write
