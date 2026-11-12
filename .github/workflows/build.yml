@@ -1,0 +1,87 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (Universal: Apple Silicon + Intel)
+        run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Sign (ad-hoc) and package
+        run: |
+          ART=build/T8Cam_artefacts/Release
+          mkdir -p dist
+          for b in "$ART/AU/T8Cam.component" "$ART/VST3/T8Cam.vst3" "$ART/Standalone/T8Cam.app"; do
+            codesign --force --deep --sign - "$b"
+            codesign --verify --verbose "$b"
+          done
+          cp -R "$ART/AU/T8Cam.component" "$ART/VST3/T8Cam.vst3" "$ART/Standalone/T8Cam.app" dist/
+          cp scripts/install-mac.command dist/
+          chmod +x dist/install-mac.command
+          (cd dist && ditto -c -k --keepParent . ../T8Cam-macOS.zip)
+
+      - name: Validate Audio Unit (auval)
+        continue-on-error: true
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R build/T8Cam_artefacts/Release/AU/T8Cam.component ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          auval -a | grep -i t8 || true
+          auval -strict -v aufx T8Cm T8Ab
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: T8Cam-macOS
+          path: T8Cam-macOS.zip
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: T8Cam-macOS.zip
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $art = "build/T8Cam_artefacts/Release"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item -Recurse "$art/VST3/T8Cam.vst3" dist/
+          Copy-Item "$art/Standalone/T8Cam.exe" dist/
+          Compress-Archive -Path dist/* -DestinationPath T8Cam-Windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: T8Cam-Windows
+          path: T8Cam-Windows.zip
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: T8Cam-Windows.zip
