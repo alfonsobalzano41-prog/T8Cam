@@ -234,9 +234,10 @@ static NSArray<AVCaptureDevice*>* findVideoDevices()
     }
     else
     {
-        JUCE_BEGIN_IGNORE_DEPRECATION_WARNINGS
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [types addObject: AVCaptureDeviceTypeExternalUnknown];
-        JUCE_END_IGNORE_DEPRECATION_WARNINGS
+       #pragma clang diagnostic pop
     }
 
     auto* discovery = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes: types
