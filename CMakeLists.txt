@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 # Deve stare prima di project(): macOS 11 è il minimo per Apple Silicon.
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
 
-project(T8Cam VERSION 0.1.0 LANGUAGES C CXX)
+project(T8Cam VERSION 0.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,7 +61,13 @@ target_sources(T8Cam PRIVATE
     Source/PluginEditor.cpp
     Source/CameraView.cpp
     Source/CameraSource.cpp
-    Source/CameraPermission.cpp)
+    Source/CameraPermission.cpp
+    Source/GifDecoder.cpp
+    Source/VideoEffects.cpp
+    Source/MediaModel.cpp
+    Source/MediaPanel.cpp
+    Source/Presets.cpp
+    Source/UpdateChecker.cpp)
 
 if(APPLE)
     target_sources(T8Cam PRIVATE Source/CameraPermission_mac.mm)
