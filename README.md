@@ -7,9 +7,8 @@ L'audio passa intatto: il plugin lo usa solo per far reagire il video.
 ## Funzioni
 
 - **Webcam**: scelta della camera (anche Continuity Camera dell'iPhone e camere USB), specchio.
-- **Effetti** (menu a tendina + Intensità): Bianco e nero, Seppia, Negativo, Pixel, Pop art, Termico,
-  Visione notturna, VHS, Glitch, Schizzo, Neon, Fumetto, Duotone, Film vecchio, CRT, Caleidoscopio.
-  Glitch, VHS e Pixel reagiscono anche all'audio.
+- **Effetti** (menu a tendina + Intensità): Bianco e nero, Negativo, Pop art, Termico, Visione notturna,
+  Glitch, Schizzo, Neon, Fumetto, Duotone, Caleidoscopio. Glitch reagisce anche all'audio.
 - **Pulse**: l'immagine pulsa a tempo con l'audio della traccia.
 - **Nascondi UI**: lascia solo il video, pulito. Per far tornare l'interfaccia: doppio clic sul video,
   oppure il pulsante "Mostra UI" che compare in alto a destra quando passi col mouse.
@@ -18,7 +17,7 @@ L'audio passa intatto: il plugin lo usa solo per far reagire il video.
   - Puoi trascinare i file direttamente dal Finder sul video.
   - Per le scritte: testo su più righe, carattere, colore, grassetto, ombra.
   - Per tutti: dimensione, opacità, rotazione, visibile, ordine (Su/Giù), duplica, elimina.
-- **Preset**: 19 preset già pronti + i tuoi. "Salva" memorizza effetto, intensità, specchio, pulse e tutti i media.
+- **Preset**: 14 preset già pronti + i tuoi. "Salva" memorizza effetto, intensità, specchio, pulse e tutti i media.
   I preset di fabbrica senza scritte cambiano solo il look e lasciano i tuoi media dove sono.
 - Tutto viene salvato anche nel progetto del DAW.
 

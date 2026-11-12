@@ -55,32 +55,27 @@ PresetManager::PresetManager (T8CamProcessor& p)
 void PresetManager::buildFactory()
 {
     // Indici effetti: vedi VideoEffects::getNames()
-    enum { none, mono, sepia, negative, pixel, posterize, thermal, nightVision,
-           vhs, glitch, sketch, neon, comic, duotone, oldFilm, crt, kaleidoscope };
+    enum { none, mono, negative, posterize, thermal, nightVision,
+           glitch, sketch, neon, comic, duotone, kaleidoscope };
 
     const auto u = [] (const char* s) { return juce::String::fromUTF8 (s); };
 
     const Factory list[] = {
         { "Pulito",               makePreset (none,         1.0f, 0.0f) },
         { "Noir",                 makePreset (mono,         1.0f, 0.0f) },
-        { u ("Film anni '20"),    makePreset (oldFilm,      0.8f, 0.0f) },
-        { "Seppia morbido",       makePreset (sepia,        0.7f, 0.0f) },
-        { "VHS",                  makePreset (vhs,          0.6f, 0.0f) },
         { "Glitch club",          makePreset (glitch,       0.4f, 0.6f) },
-        { "CRT",                  makePreset (crt,          0.7f, 0.0f) },
         { "Termico",              makePreset (thermal,      1.0f, 0.0f) },
         { "Visione notturna",     makePreset (nightVision,  0.6f, 0.0f) },
         { "Fumetto",              makePreset (comic,        0.6f, 0.0f) },
         { "Schizzo a matita",     makePreset (sketch,       1.0f, 0.0f) },
         { "Neon pulse",           makePreset (neon,         1.0f, 0.5f) },
         { "Pop art",              makePreset (posterize,    0.8f, 0.0f) },
-        { "Pixel 8-bit",          makePreset (pixel,        0.4f, 0.0f) },
         { "Duotone tramonto",     makePreset (duotone,      1.0f, 0.0f) },
         { "Negativo",             makePreset (negative,     1.0f, 0.0f) },
         { "Caleidoscopio",        makePreset (kaleidoscope, 1.0f, 0.3f) },
         { u ("● LIVE"),           makePreset (none,         1.0f, 0.0f,
                                               textBadge (u ("● LIVE"), 0.13f, 0.09f, 0.08f, juce::Colour (0xffff3030))) },
-        { "ON AIR (VHS)",         makePreset (vhs,          0.5f, 0.0f,
+        { "ON AIR",               makePreset (none,         1.0f, 0.0f,
                                               textBadge ("ON AIR", 0.85f, 0.09f, 0.08f, juce::Colours::white)) },
     };
 

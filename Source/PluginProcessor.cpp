@@ -20,7 +20,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout T8CamProcessor::createLayout
     AudioProcessorValueTreeState::ParameterLayout layout;
 
     layout.add (std::make_unique<AudioParameterBool>   (ParameterID { ParamIDs::mirror, 1 }, "Specchio", true));
-    layout.add (std::make_unique<AudioParameterChoice> (ParameterID { ParamIDs::effect, 2 }, "Effetto",
+    layout.add (std::make_unique<AudioParameterChoice> (ParameterID { ParamIDs::effect, 3 }, "Effetto",
                                                         VideoEffects::getNames(), 0));
     layout.add (std::make_unique<AudioParameterFloat>  (ParameterID { ParamIDs::amount, 2 }, String::fromUTF8 ("Intensità"),
                                                         NormalisableRange<float> (0.0f, 1.0f), 1.0f));

@@ -9,8 +9,8 @@ namespace
 {
     enum Effect
     {
-        none, mono, sepia, negative, pixel, posterize, thermal, nightVision,
-        vhs, glitch, sketch, neon, comic, duotone, oldFilm, crt, kaleidoscope
+        none, mono, negative, posterize, thermal, nightVision,
+        glitch, sketch, neon, comic, duotone, kaleidoscope
     };
 
     using u8 = juce::uint8;
@@ -126,9 +126,8 @@ namespace
 const juce::StringArray& getNames()
 {
     static const juce::StringArray names {
-        "Nessuno", "Bianco e nero", "Seppia", "Negativo", "Pixel", "Pop art", "Termico",
-        "Visione notturna", "VHS", "Glitch", "Schizzo", "Neon", "Fumetto", "Duotone",
-        "Film vecchio", "CRT", "Caleidoscopio"
+        "Nessuno", "Bianco e nero", "Negativo", "Pop art", "Termico", "Visione notturna",
+        "Glitch", "Schizzo", "Neon", "Fumetto", "Duotone", "Caleidoscopio"
     };
     return names;
 }
@@ -152,50 +151,9 @@ void apply (juce::Image& image, int effect, float amount, float level, juce::uin
             forEachPixel (bd, [&] (u8* p, int, int) { const int l = lumaOf (p); mixInto (p, l, l, l, a256); });
             break;
 
-        case sepia:
-            forEachPixel (bd, [&] (u8* p, int, int)
-            {
-                const int r = p[2], g = p[1], b = p[0];
-                mixInto (p, clamp8 ((r * 101 + g * 197 + b * 48) >> 8),
-                            clamp8 ((r * 89  + g * 176 + b * 43) >> 8),
-                            clamp8 ((r * 70  + g * 137 + b * 34) >> 8), a256);
-            });
-            break;
-
         case negative:
             forEachPixel (bd, [&] (u8* p, int, int) { mixInto (p, 255 - p[2], 255 - p[1], 255 - p[0], a256); });
             break;
-
-        case pixel:
-        {
-            const int block = juce::jmax (2, (int) (4 + amount * 36 + level * 16)) * juce::jmax (1, w / 640);
-
-            for (int by = 0; by < h; by += block)
-            {
-                for (int bx = 0; bx < w; bx += block)
-                {
-                    const int ex = juce::jmin (w, bx + block), ey = juce::jmin (h, by + block);
-                    int sr = 0, sg = 0, sb = 0, n = 0;
-
-                    for (int y = by; y < ey; y += 2)
-                        for (int x = bx; x < ex; x += 2)
-                        {
-                            const auto* p = bd.getPixelPointer (x, y);
-                            sb += p[0]; sg += p[1]; sr += p[2]; ++n;
-                        }
-
-                    sr /= n; sg /= n; sb /= n;
-
-                    for (int y = by; y < ey; ++y)
-                        for (int x = bx; x < ex; ++x)
-                        {
-                            auto* p = bd.getPixelPointer (x, y);
-                            p[0] = (u8) sb; p[1] = (u8) sg; p[2] = (u8) sr;
-                        }
-                }
-            }
-            break;
-        }
 
         case posterize:
         {
@@ -231,37 +189,6 @@ void apply (juce::Image& image, int effect, float amount, float level, juce::uin
                 l = (l * vig.at (x, y)) >> 8;
                 mixInto (p, l / 5, l, l / 4, 256);
             });
-            break;
-        }
-
-        case vhs:
-        {
-            const int shift = (int) (2 + amount * 8 + level * 12) * juce::jmax (1, w / 640);
-            RowCopy row (w);
-            const int jitterRow = rng.range (h);
-
-            for (int y = 0; y < h; ++y)
-            {
-                auto* line = bd.getLinePointer (y);
-                row.load (line, w);
-                const int jitter = std::abs (y - jitterRow) < 6 ? rng.range (12) : 0;
-                const int scan = (y & 1) ? 220 : 256;
-
-                for (int x = 0; x < w; ++x)
-                {
-                    auto* p = line + x * 4;
-                    const int r = row.at (x + shift + jitter, w)[2];
-                    const int g = row.at (x + jitter, w)[1];
-                    const int b = row.at (x - shift + jitter, w)[0];
-                    const int l = (r * 77 + g * 150 + b * 29) >> 8;
-                    const int n = rng.range (24) - 12;
-
-                    // Colori un po' slavati, righe di scansione, rumore.
-                    p[2] = clamp8 ((((r * 3 + l) >> 2) * scan >> 8) + n);
-                    p[1] = clamp8 ((((g * 3 + l) >> 2) * scan >> 8) + n);
-                    p[0] = clamp8 ((((b * 3 + l) >> 2) * scan >> 8) + n);
-                }
-            }
             break;
         }
 
@@ -377,50 +304,6 @@ void apply (juce::Image& image, int effect, float amount, float level, juce::uin
                 mixInto (p, dark.getRed()   + (((light.getRed()   - dark.getRed())   * l) >> 8),
                             dark.getGreen() + (((light.getGreen() - dark.getGreen()) * l) >> 8),
                             dark.getBlue()  + (((light.getBlue()  - dark.getBlue())  * l) >> 8), a256);
-            });
-            break;
-        }
-
-        case oldFilm:
-        {
-            Vignette vig (w, h, 0.4f + amount * 0.6f);
-            const int flicker = 236 + rng.range (24);
-            const int grain = 8 + (int) (amount * 40);
-            const int scratchX = rng.range (w * 4);   // a volte fuori schermo: graffio non sempre visibile
-
-            forEachPixel (bd, [&] (u8* p, int x, int y)
-            {
-                const int r = p[2], g = p[1], b = p[0];
-                int sr = (r * 101 + g * 197 + b * 48) >> 8;
-                int sg = (r * 89  + g * 176 + b * 43) >> 8;
-                int sb = (r * 70  + g * 137 + b * 34) >> 8;
-                const int n = rng.range (grain) - grain / 2;
-                const int f = (vig.at (x, y) * flicker) >> 8;
-                const int scratch = std::abs (x - scratchX) < 1 ? 60 : 0;
-
-                p[2] = clamp8 (((sr * f) >> 8) + n + scratch);
-                p[1] = clamp8 (((sg * f) >> 8) + n + scratch);
-                p[0] = clamp8 (((sb * f) >> 8) + n + scratch);
-            });
-            break;
-        }
-
-        case crt:
-        {
-            Vignette vig (w, h, 0.7f);
-            const int lineSize = juce::jmax (2, h / 240);
-
-            forEachPixel (bd, [&] (u8* p, int x, int y)
-            {
-                const int scan = ((y / lineSize) & 1) ? 256 - (int) (amount * 140) : 256;
-                const int v = (vig.at (x, y) * scan) >> 8;
-                const int sub = x % 3;   // maschera RGB tipo fosfori
-
-                for (int c = 0; c < 3; ++c)
-                {
-                    const int boost = (2 - c) == sub ? 290 : 220;   // c: 0=B 1=G 2=R
-                    p[c] = clamp8 ((((p[c] * boost) >> 8) * v) >> 8);
-                }
             });
             break;
         }
